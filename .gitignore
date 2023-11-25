@@ -1,2 +1,6 @@
 EDA/*.csv
 EDA/*.npz
+EDA/*.pkl
+ML/*.csv
+ML/*.npz
+ML/*.pkl
