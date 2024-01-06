@@ -11,7 +11,10 @@ async def cmd_start(message: Message):
         Обращение по имени
     """
     content = Text("Приветствую Вас, ", Bold(message.from_user.full_name), "!", 
-                   "\nЧтобы сделать рекомендацию введите /reccom")
+                   "\nЧтобы сделать рекомендацию введите /reccom",
+                   "\nОценить работу бота /make_review",
+                   "\nПросмотр графика отзывов /get_statistic"
+                   )
     await message.answer(**content.as_kwargs())
 
 @router.message(F.text)
