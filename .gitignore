@@ -4,3 +4,4 @@ EDA/*.pkl
 ML/*.csv
 ML/*.npz
 ML/*.pkl
+bot/*.sh
