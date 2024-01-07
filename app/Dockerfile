@@ -11,4 +11,4 @@ RUN apt-get update && apt-get full-upgrade -y && apt-get install gcc -y
 RUN apt-get install unzip
 RUN cat zip_ratings/* > ratings.zip && unzip ratings.zip
 RUN pip install wheel setuptools pip --upgrade && pip install -r requirements.txt
-CMD uvicorn main:app --reload
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
