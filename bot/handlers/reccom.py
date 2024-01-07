@@ -17,8 +17,8 @@ with open("lfm_model.pkl", "rb") as f:
 with open("encoder.pkl", "rb") as f:
     encoder = pickle.load(f)
 # Загрузка данных
-rating_df = pd.read_csv("ratings.csv", index_col=0)
-products_df = pd.read_csv("products.csv")
+rating_df = pd.read_csv("ratings.csv", sep=',', encoding='utf-8')
+products_df = pd.read_csv("products.csv", sep=',', encoding='utf-8')
 # Инициализация модели
 lfm_model = LFM(model=model, rating_df=rating_df, encoder=encoder)
 
@@ -114,13 +114,13 @@ async def reccom_chosen_result(message: Message, state: FSMContext, uids: List[s
 
     if user_data['chosen_reccom'] == person_reccom.lower():
         items = lfm_model.recommend(uid=uids[0], k=10)
-        products_names = products_df[products_df["product_id"].isin(items)]["product_name"].to_list()
+        products_names = products_df[products_df['product_id'].isin(items)]['product_name'].to_list()
         products_names = get_reccom_str(products_names=products_names)
         await message.answer(text = products_names)
     elif user_data['chosen_reccom'] == multiple_reccom.lower():
         prediction = lfm_model.predict(users_to_recommend=uids, k=10)
         prediction = (dict(zip(prediction.keys(), 
-                            list(map(lambda x: products_df[products_df["product_id"].isin(x)]["product_name"].to_list(), 
+                            list(map(lambda x: products_df[products_df['product_id'].isin(x)]['product_name'].to_list(), 
                                         prediction.values())))))
         prediction = get_multiple_reccom_str(reccomendation=prediction)
         await message.answer(text = prediction)
