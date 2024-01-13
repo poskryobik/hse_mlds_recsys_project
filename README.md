@@ -3,7 +3,7 @@
 ## Описание данных
 
 **Данные состоят из 2 [файлов](https://drive.google.com/drive/folders/1Z8uIxxGSSsER22x4Uh546jXuE8NUIUNz?usp=sharing):**
-* *products.csv*  - товары с их харакретистиками
+* *products.csv*  - товары с их характеристиками
 * *transactions.csv*  - транзакции покупателей
 
 **products.csv** 49688 строк
@@ -25,9 +25,21 @@
 * *add_to_cart_order* : float - номер под которым данный товар был добавлен в корзину
 * *reordered* : float - был ли товар "перезаказан"
 
+
+## Модели и результаты:
+
+В ходе работы были реализованы 3 различных подхода к построению рекомендательных систем:
+
+|  | Baseline Pop-based | Collaborative fitering | LightFM | 
+| --- | --- | --- | --- |
+| `MAP@k` | 0.047 | 0.069 | 0.083 |
+
+## Реализован [API](http://149.154.70.151:8000/docs):
+![](https://github.com/poskryobik/hse_mlds_recsys_project/blob/main/app/API.gif)
+
+## Реализован [Telegram Bot](https://t.me/hse_recsys_project_bot) @hse_recsys_project_bot:
+![](https://github.com/poskryobik/hse_mlds_recsys_project/blob/main/bot/bot.gif)
+
 ## План последующей работы:
 
-* Этап 1: Разведочный анализ данных (EDA);
-* Этап 2: Выбор классического метода ML, обучение, оценка (колаборативная фильтрация и PureSVD);
-* Этап 3: Применение нейросетевых подходов (DL), обучение модели, оценка;
-* Этап 4: Разработка веб-сервиса.
+* Реализовать рекомендательную систему с использованием нейросетевого подхода с целью прироста метрики качества.
