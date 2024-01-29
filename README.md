@@ -30,9 +30,13 @@
 
 В ходе работы были реализованы 3 различных подхода к построению рекомендательных систем:
 
-|  | Baseline Pop-based | Collaborative fitering | LightFM | 
-| --- | --- | --- | --- |
-| `MAP@k` | 0.047 | 0.069 | 0.083 |
+|  | MAP@k | MNAP@k | Hitrate@k | AVG_nDSG@k|  AVG_Precision@k | 
+| --- | --- | --- | --- | --- |--- |
+| Baseline Pop-based | 0.006 | 0.008 | 0.438 | 0.015 | 0.062 |
+| Collaborative fitering | 0.007 | 0.013 | 0.505 | 0.017 | 0.074 |
+| LightFM | 0.005 | 0.008 | 0.475 | 0.013 | 0.007 |
+
+
 
 ## Реализован [API](http://149.154.70.151:8000/docs):
 ![](https://github.com/poskryobik/hse_mlds_recsys_project/blob/main/app/API.gif)
