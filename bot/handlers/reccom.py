@@ -2,7 +2,8 @@ from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from aiogram.types import Message, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from filters.find_uid import HasUidFilter
 from typing import List
 from LFM import LFM
@@ -22,12 +23,10 @@ products_df = pd.read_csv("products.csv", sep=',', encoding='utf-8')
 # Инициализация модели
 lfm_model = LFM(model=model, rating_df=rating_df, encoder=encoder)
 
-
-
 router = Router()
-
 person_reccom = "Одному пользователю"
 multiple_reccom = "Списку пользователей"
+
 
 def make_row_keyboard() -> ReplyKeyboardMarkup:
     """
@@ -45,19 +44,24 @@ def make_row_keyboard() -> ReplyKeyboardMarkup:
     )
     return keyboard
 
+
 def get_reccom_str(products_names: list):
     """
         Строка для персональной рекомендации
     """
-    ans_str = "".join([str(i+1) + ": " + str(product) + "\n" for i, product in enumerate(products_names)])
+    ans_str = "".join([str(i+1) + ": " + str(product) + "\n"
+                       for i, product in enumerate(products_names)])
     return ans_str
+
 
 def get_multiple_reccom_str(reccomendation):
     """
         Строка для множественной рекомендации
     """
-    ans_str = "".join([str(k) + ": " + str(val) + "\n" for k, val in reccomendation.items()])
-    return ans_str 
+    ans_str = "".join([str(k) + ": " + str(val) + "\n"
+                       for k, val in reccomendation.items()])
+    return ans_str
+
 
 class Reccom(StatesGroup):
     """
@@ -92,7 +96,7 @@ async def reccom_chosen(message: Message, state: FSMContext):
 
 
 @router.message(Reccom.choosing_reccom, F.text.in_(multiple_reccom))
-async def reccom_chosen(message: Message, state: FSMContext):
+async def reccoms_chosen(message: Message, state: FSMContext):
     """
         Запрос списка uid для множественной рекомендации
     """
@@ -103,10 +107,9 @@ async def reccom_chosen(message: Message, state: FSMContext):
     await state.set_state(Reccom.choosing_uid)
 
 
-
-
 @router.message(Reccom.choosing_uid, HasUidFilter())
-async def reccom_chosen_result(message: Message, state: FSMContext, uids: List[str]):
+async def reccom_chosen_result(message: Message, state: FSMContext,
+                               uids: List[str]):
     """
         Вернуть рекомендацию
     """
@@ -114,25 +117,29 @@ async def reccom_chosen_result(message: Message, state: FSMContext, uids: List[s
 
     if user_data['chosen_reccom'] == person_reccom.lower():
         items = lfm_model.recommend(uid=uids[0], k=10)
-        products_names = products_df[products_df['product_id'].isin(items)]['product_name'].to_list()
+        products_names = (
+            products_df[products_df['product_id'].isin(items)]['product_name']
+            .to_list())
         products_names = get_reccom_str(products_names=products_names)
-        await message.answer(text = products_names)
+        await message.answer(text=products_names)
     elif user_data['chosen_reccom'] == multiple_reccom.lower():
         prediction = lfm_model.predict(users_to_recommend=uids, k=10)
-        prediction = (dict(zip(prediction.keys(), 
-                            list(map(lambda x: products_df[products_df['product_id'].isin(x)]['product_name'].to_list(), 
+        prediction = (dict(zip(prediction.keys(),
+                               list(map(lambda x:
+                                        products_df[products_df['product_id']
+                                                    .isin(x)]['product_name']
+                                        .to_list(),
                                         prediction.values())))))
         prediction = get_multiple_reccom_str(reccomendation=prediction)
-        await message.answer(text = prediction)
+        await message.answer(text=prediction)
     # Чистка состояний
     await state.clear()
-    
+
 
 @router.message(Reccom.choosing_uid, F.text)
 async def food_chosen_incorrectly(message: Message):
     """
-        Когда нет цифр в исходном тексте 
+        Когда нет цифр в исходном тексте
     """
-    await message.answer(text="В тексте не найдено ни одного uid, пожалуйста, попробуйте еще раз")
-
-
+    await message.answer(text="""В тексте не найдено ни одного uid.
+Пожалуйста, попробуйте еще раз""")
