@@ -7,4 +7,4 @@
 `python bot/download_files.py`
 * Для запуска тестирования требуется выполнить команду:
 ` coverage run bot/test_bot.py`
-* Результат тестирования в папке `bot/htmlcov`
+* Результат тестирования в архиве `bot/htmlcov.zip`
