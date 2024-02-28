@@ -52,9 +52,9 @@ class EASE():
             self.encoder = encoder
         self.rating_df = rating_df
 
-    def predict(self, users_to_recommend: list, k: int = 10, n_jobs: int = 1):
+    def predict(self, users_to_recommend: list, k: int = 10):
         """
-            Параллельное вычисление рекомендаций для пользователей
+            Вычисление рекомендаций для несколькиъ пользователей
         """
         predictions = {}
         for uid in users_to_recommend:
