@@ -39,10 +39,10 @@
 
 
 ## Реализован [API](http://149.154.70.151:8000/docs):
-![](https://github.com/poskryobik/hse_mlds_recsys_project/blob/main/app/API.gif)
+![](https://github.com/poskryobik/hse_mlds_recsys_project/blob/main/img/API.gif)
 
 ## Реализован [Telegram Bot](https://t.me/hse_recsys_project_bot) @hse_recsys_project_bot:
-![](https://github.com/poskryobik/hse_mlds_recsys_project/blob/main/bot/bot.gif)
+![](https://github.com/poskryobik/hse_mlds_recsys_project/blob/main/img/bot.gif)
 
 ## План последующей работы:
 
