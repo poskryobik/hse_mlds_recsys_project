@@ -1,12 +1,14 @@
 import asyncio
-from sys import argv
 from aiogram import Bot, Dispatcher
 from handlers import different_types, reccom, statistic
+import os
 import logging
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # Входным аргументом является токе бота
-_, bot_token = argv
-
+bot_token = os.getenv("TOKEN")
 # Включение логирования
 logging.basicConfig(level=logging.INFO)
 

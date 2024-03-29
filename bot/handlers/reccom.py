@@ -6,22 +6,8 @@ from aiogram.types import Message, KeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from filters.find_uid import HasUidFilter
 from typing import List
-from LFM import LFM
-import pandas as pd
-import pickle
+import requests
 
-
-# Загрузка модели
-with open("lfm_model.pkl", "rb") as f:
-    model = pickle.load(f)
-# Загрузка кодировщика
-with open("encoder.pkl", "rb") as f:
-    encoder = pickle.load(f)
-# Загрузка данных
-rating_df = pd.read_csv("ratings.csv", sep=',', encoding='utf-8')
-products_df = pd.read_csv("products.csv", sep=',', encoding='utf-8')
-# Инициализация модели
-lfm_model = LFM(model=model, rating_df=rating_df, encoder=encoder)
 
 router = Router()
 person_reccom = "Одному пользователю"
@@ -112,24 +98,23 @@ async def reccom_chosen_result(message: Message, state: FSMContext,
                                uids: List[str]):
     """
         Вернуть рекомендацию
+        Осуществляется к развернутому FastAPI в рамках проекта
     """
     user_data = await state.get_data()
 
     if user_data['chosen_reccom'] == person_reccom.lower():
-        items = lfm_model.recommend(uid=uids[0], k=10)
-        products_names = (
-            products_df[products_df['product_id'].isin(items)]['product_name']
-            .to_list())
-        products_names = get_reccom_str(products_names=products_names)
+        data = {"uid": uids[0]}
+        response = requests.get("http://172.22.0.3:8000/personal_reccomend",
+                                json=data)
+        products = (response.json()[uids[0]]
+                    .replace("[", "").replace("]", "").split(","))
+        products_names = get_reccom_str(products_names=products)
         await message.answer(text=products_names)
     elif user_data['chosen_reccom'] == multiple_reccom.lower():
-        prediction = lfm_model.predict(users_to_recommend=uids, k=10)
-        prediction = (dict(zip(prediction.keys(),
-                               list(map(lambda x:
-                                        products_df[products_df['product_id']
-                                                    .isin(x)]['product_name']
-                                        .to_list(),
-                                        prediction.values())))))
+        data = [{"uid": i} for i in uids]
+        response = requests.get("http://172.22.0.3:8000/multiple_reccomend",
+                                json=data)
+        prediction = dict(response.json())
         prediction = get_multiple_reccom_str(reccomendation=prediction)
         await message.answer(text=prediction)
     # Чистка состояний
