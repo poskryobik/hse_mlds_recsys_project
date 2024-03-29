@@ -104,7 +104,7 @@ async def reccom_chosen_result(message: Message, state: FSMContext,
 
     if user_data['chosen_reccom'] == person_reccom.lower():
         data = {"uid": uids[0]}
-        response = requests.get("http://172.22.0.3:8000/personal_reccomend",
+        response = requests.get("http://fastapi_app:8000/personal_reccomend",
                                 json=data)
         products = (response.json()[uids[0]]
                     .replace("[", "").replace("]", "").split(","))
@@ -112,7 +112,7 @@ async def reccom_chosen_result(message: Message, state: FSMContext,
         await message.answer(text=products_names)
     elif user_data['chosen_reccom'] == multiple_reccom.lower():
         data = [{"uid": i} for i in uids]
-        response = requests.get("http://172.22.0.3:8000/multiple_reccomend",
+        response = requests.get("http://fastapi_app:8000/multiple_reccomend",
                                 json=data)
         prediction = dict(response.json())
         prediction = get_multiple_reccom_str(reccomendation=prediction)
