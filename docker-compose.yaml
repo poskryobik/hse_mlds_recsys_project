@@ -13,9 +13,8 @@ services:
   app:
     build:
       context: ./app
-    # image: poskrebyshev17/hse_mlds_recsys_project:app
     container_name: fastapi_app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - 8000:8000
     depends_on:
@@ -26,7 +25,6 @@ services:
   bot:
     build:
       context: ./bot
-    # image: poskrebyshev17/hse_mlds_recsys_project:bot
     container_name: tg_bot
     command: python bot.py
     depends_on:

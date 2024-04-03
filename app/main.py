@@ -4,7 +4,7 @@ from typing import List
 from pydantic import BaseModel
 import pickle
 import pandas as pd
-from LFM import LFM
+from app.models.LFM import LFM
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
@@ -15,15 +15,15 @@ import datetime
 app = FastAPI()
 
 # Загрузка модели
-with open("models/lfm_model.pkl", "rb") as f:
+with open("app/models/lfm_model.pkl", "rb") as f:
     model = pickle.load(f)
 # Загрузка кодировщика
-with open("models/encoder.pkl", "rb") as f:
+with open("app/models/encoder.pkl", "rb") as f:
     encoder = pickle.load(f)
 
 # Загрузка данных
-rating_df = pd.read_csv("ratings.csv", sep=',', encoding='utf-8')
-products_df = pd.read_csv("products.csv", sep=',', encoding='utf-8')
+rating_df = pd.read_csv("app/ratings.csv", sep=',', encoding='utf-8')
+products_df = pd.read_csv("app/products.csv", sep=',', encoding='utf-8')
 # Инициализация модели
 lfm_model = LFM(model=model, rating_df=rating_df, encoder=encoder)
 
