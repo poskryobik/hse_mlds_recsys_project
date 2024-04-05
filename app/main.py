@@ -28,15 +28,6 @@ products_df = pd.read_csv("app/products.csv", sep=',', encoding='utf-8')
 lfm_model = LFM(model=model, rating_df=rating_df, encoder=encoder)
 
 
-@app.get("/")
-@cache(expire=60)
-async def greetings():
-    """
-        Ручка для приветсвия
-    """
-    return "Hello! This API for ML Service"
-
-
 @app.on_event("startup")
 async def startup():
     """
@@ -44,6 +35,14 @@ async def startup():
     """
     redis = aioredis.from_url("redis://localhost")
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+
+
+@app.get("/")
+async def greetings():
+    """
+        Ручка для приветсвия
+    """
+    return "Hello! This API for ML Service"
 
 
 class User(BaseModel):
