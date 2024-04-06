@@ -1,9 +1,11 @@
 import asyncio
 from aiogram import Bot, Dispatcher
-from handlers import different_types, reccom, statistic
-import os
 import logging
 from dotenv import load_dotenv
+import os
+import sys
+sys.path.append(os.getcwd())
+from bot.handlers import different_types, reccom, statistic
 load_dotenv()
 
 

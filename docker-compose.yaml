@@ -26,7 +26,7 @@ services:
     build:
       context: ./bot
     container_name: tg_bot
-    command: python bot.py
+    command: python bot/main.py
     depends_on:
       - app
     networks:

@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, KeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
-from filters.find_uid import HasUidFilter
+from bot.filters.find_uid import HasUidFilter
 from typing import List
 import requests
 
