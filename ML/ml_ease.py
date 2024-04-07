@@ -17,26 +17,32 @@ gdown.download(url="https://drive.google.com/uc?export=download&id=1epGrpzB8BEC2
 test_all_df = pd.read_csv("test_transacrion_df.csv", index_col=0)
 rating_df = pd.read_csv("ratings.csv", index_col=0)
 # Оставляем только продукты которые встречались больше N раз
-top_product = np.array(rating_df.groupby(['product_id'], as_index=False)['rating']
+top_product = np.array(rating_df.groupby(['product_id'],
+                                         as_index=False)['rating']
                        .count().query(f'rating > {N}')['product_id'])
 rating_df = rating_df[rating_df['product_id'].isin(top_product)]
 # Кодировщик пользователей
 user2id = {k: v for v, k in enumerate(rating_df["user_id"].unique())}
 id2user = {k: v for v, k in user2id.items()}
 # Кодировка items
-item2id = {k: v for v, k in enumerate(sorted(rating_df['product_id'].unique()))}
+item2id = {k: v for v, k in enumerate(sorted(
+    rating_df['product_id'].unique()))}
 id2item = {k: v for v, k in item2id.items()}
 # Кодирование пользователей
 rating_df['user_id'] = rating_df["user_id"].apply(lambda x: user2id[x])
-test_all_df['user_id'] = test_all_df["user_id"].apply(lambda x: user2id.get(x, 999999))
+test_all_df['user_id'] = (
+    test_all_df["user_id"].apply(lambda x: user2id.get(x, 999999)))
 # Кодирование продуктов
 rating_df['product_id'] = rating_df['product_id'].apply(lambda x: item2id[x])
-test_all_df['product_id'] = test_all_df['product_id'].apply(lambda x: item2id.get(x, -1))
+test_all_df['product_id'] = (
+    test_all_df['product_id'].apply(lambda x: item2id.get(x, -1)))
 # Удаление повторяющихся покупок пользователем в тесте
-test_all_df = test_all_df.drop_duplicates(subset=['user_id', 'product_id'], keep='first')
+test_all_df = test_all_df.drop_duplicates(subset=['user_id', 'product_id'],
+                                          keep='first')
 # Подготовка матрицы интеракций
 matrix = sps.coo_matrix(
-    (np.ones(rating_df.shape[0]), (rating_df['user_id'], rating_df['product_id'])),
+    (np.ones(rating_df.shape[0]),
+     (rating_df['user_id'], rating_df['product_id'])),
     shape=(rating_df["user_id"].nunique(), rating_df["product_id"].nunique()))
 
 
@@ -44,7 +50,8 @@ class EASE():
     """
         EASE
         Reference:
-            Harald Steck. "Embarrassingly Shallow Autoencoders for Sparse Data" in WWW 2019.
+            Harald Steck. "Embarrassingly Shallow Autoencoders for Sparse Data"
+            in WWW 2019.
     """
     def __init__(self, encoder, rating_df=None, model=None):
         if model is not None:
@@ -68,7 +75,9 @@ class EASE():
         """
         if self.rating_df is None:
             return None
-        return np.argsort(np.array(self.rating_df.groupby("product_id")["rating"].sum()))[::-1]
+        return np.argsort(
+            np.array(self.rating_df.groupby("product_id")["rating"].sum())
+            )[::-1]
 
     def recommend(self, uid: int, k: int):
         """
@@ -78,7 +87,9 @@ class EASE():
         if uid == -1:
             return self.cold_start()[:k]
         # Покупки пользователя
-        interact = self.rating_df[self.rating_df['user_id'] == uid]['product_id'].to_list()
+        interact = (
+            self.rating_df[self.rating_df['user_id'] == uid]['product_id']
+            .to_list())
         # Составляем вектор интеракций человека
         vector = np.zeros(len(item2id))
         vector[interact] = 1
@@ -106,7 +117,8 @@ class EASE():
 # Для ускорения расчета метрик, перевод в CSC
 X = matrix.tocsc()
 # Пользователи с их релевантными покупками
-relevant = (test_all_df[test_all_df["user_id"].isin(user2id.keys())].sort_values(by=["user_id", "add_to_cart_order"])
+relevant = (test_all_df[test_all_df["user_id"].isin(user2id.keys())]
+            .sort_values(by=["user_id", "add_to_cart_order"])
             .groupby(['user_id'])
             .agg({'product_id': 'unique'})['product_id'].to_list())
 # Подбор коэффициента регуляризации в EASE
