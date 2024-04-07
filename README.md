@@ -1,5 +1,11 @@
 # hse_mlds_recsys_project
 
+## Начало работы
+* Установка зависимостей `pip install -r requirements.txt`
+* Тестирование `pytest -v tests/`
+* Перед запуском сервиса в `.env` указать токен бота
+* Запуск сервиса `docker compose build` и `docker compose up` 
+
 ## Описание данных
 
 **Данные состоят из 2 [файлов](https://drive.google.com/drive/folders/1Z8uIxxGSSsER22x4Uh546jXuE8NUIUNz?usp=sharing):**
