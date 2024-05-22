@@ -51,6 +51,3 @@
 ## Реализован [Telegram Bot](https://t.me/hse_recsys_project_bot) @hse_recsys_project_bot:
 ![](https://github.com/poskryobik/hse_mlds_recsys_project/blob/main/img/bot.gif)
 
-## План последующей работы:
-
-* Реализовать рекомендательную систему с использованием нейросетевого подхода с целью прироста метрики качества.
