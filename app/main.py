@@ -2,30 +2,51 @@ from fastapi import FastAPI, UploadFile
 from fastapi.responses import FileResponse
 from typing import List
 from pydantic import BaseModel
-import pickle
 import pandas as pd
-from app.models.LFM import LFM
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
 from redis import asyncio as aioredis
 import datetime
+import torch
+import pickle
+from app.models.models import EncoderRNN, DecoderRNN
+from app.models.next_basket import NextBasket
 
 
 app = FastAPI()
 
-# Загрузка модели
-with open("app/models/lfm_model.pkl", "rb") as f:
-    model = pickle.load(f)
-# Загрузка кодировщика
-with open("app/models/encoder.pkl", "rb") as f:
-    encoder = pickle.load(f)
+MAX_LENGTH = 630
 
-# Загрузка данных
-rating_df = pd.read_csv("app/ratings.csv", sep=',', encoding='utf-8')
-products_df = pd.read_csv("app/products.csv", sep=',', encoding='utf-8')
-# Инициализация модели
-lfm_model = LFM(model=model, rating_df=rating_df, encoder=encoder)
+products_df = pd.read_csv("app/models/products.csv", sep=',', encoding='utf-8')
+last_basket = pd.read_parquet("app/models/users_baskets.parquet")
+
+with open('app/models/product_to_id.pickle', 'rb') as handle:
+    product_to_id = pickle.load(handle)
+with open('app/models/user_to_id.pickle', 'rb') as handle:
+    user_to_id = pickle.load(handle)
+with open('app/models/id_to_product.pickle', 'rb') as handle:
+    id_to_product = pickle.load(handle)
+with open('app/models/top_product.pickle', 'rb') as handle:
+    top_product = pickle.load(handle)
+
+device = 'cpu'
+# Инициализация моделей
+hidden_size = 128
+encoder0 = EncoderRNN(len(product_to_id.keys())+3, hidden_size,
+                      device).to(device)
+decoder0 = DecoderRNN(hidden_size, len(product_to_id.keys())+3,
+                      device).to(device)
+# Загрузка весов обученной модели
+encoder0.load_state_dict(torch.load("app/models/encoder_1.pt",
+                                    map_location=torch.device(device)))
+decoder0.load_state_dict(torch.load("app/models/decoder_1.pt",
+                                    map_location=torch.device(device)))
+
+model = NextBasket(encoder=encoder0, decoder=decoder0, device=device,
+                   prod_to_id=product_to_id, user_to_id=user_to_id,
+                   id_to_product=id_to_product, top_product=top_product,
+                   df=last_basket, max_length=MAX_LENGTH)
 
 
 @app.on_event("startup")
@@ -56,7 +77,7 @@ def get_personal_reccom(user: User):
         Персональная рекомендация
         (с кешированием 2 мин.)
     """
-    items = lfm_model.recommend(uid=user.uid, k=10)
+    items = model.recommend(user_id=user.uid, k=10)
     products_name = (
         products_df[products_df["product_id"].isin(items)]
         ["product_name"].to_list())
@@ -71,7 +92,7 @@ def get_multiple_reccom(users: List[User]):
         (с кешированием 2 мин.)
     """
     users_ids = [user.uid for user in users]
-    prediction = lfm_model.predict(users_to_recommend=users_ids, k=10)
+    prediction = model.predict(users_to_recommend=users_ids, k=10)
     lst_product = list(map(
         lambda x: products_df[
             products_df["product_id"].isin(x)]["product_name"].to_list(),
@@ -79,6 +100,21 @@ def get_multiple_reccom(users: List[User]):
     prediction = dict(zip(prediction.keys(), lst_product))
     prediction = dict(map(lambda x: (str(x[0]), x[1]), prediction.items()))
     return prediction
+
+
+@app.get("/cold_start")
+@cache(expire=120)  # Кеширование 2 минуты
+def get_cold_start(products: List[int]):
+    """
+        Для списка пользователей возвращает рекомендации
+        (с кешированием 2 мин.)
+    """
+    # products_ids = [prod.uid for prod in products]
+    items = model.cold_start(cold_seq=products, k=10)
+    products_name = (
+        products_df[products_df["product_id"].isin(items)]
+        ["product_name"].to_list())
+    return {f"{products_name}"}
 
 
 @app.post("/upload_multiple_reccomend")
@@ -89,7 +125,7 @@ def create_upload_file(file: UploadFile):
     """
     df = pd.read_csv(file.file, index_col=0)
     users_ids = list(df["user_id"].unique())
-    prediction = lfm_model.predict(users_to_recommend=users_ids, k=10)
+    prediction = model.predict(users_to_recommend=users_ids, k=10)
     lst_product = list(map(
         lambda x: products_df[
             products_df["product_id"].isin(x)]["product_name"].to_list(),
