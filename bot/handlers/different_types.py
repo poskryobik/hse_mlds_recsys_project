@@ -2,6 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.utils.formatting import Text, Bold
 from aiogram.filters import Command
+from bot.handlers.markup import main_keyboard
 
 router = Router()
 
@@ -11,12 +12,8 @@ async def cmd_start(message: Message):
     """
         Обращение по имени
     """
-    content = Text("Приветствую Вас, ", Bold(message.from_user.full_name), "!",
-                   "\nЧтобы сделать рекомендацию введите /reccom",
-                   "\nОценить работу бота /make_review",
-                   "\nПросмотр графика отзывов /get_statistic"
-                   )
-    await message.answer(**content.as_kwargs())
+    content = Text("Приветствую Вас, ", Bold(message.from_user.full_name), "!")
+    await message.answer(**content.as_kwargs(), reply_markup=main_keyboard())
 
 
 @router.message(F.text)

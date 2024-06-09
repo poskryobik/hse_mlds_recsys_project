@@ -6,6 +6,7 @@ from aiogram.types import Message, KeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, FSInputFile
 import matplotlib.pyplot as plt
 import seaborn as sns
+from bot.handlers.markup import main_keyboard
 
 
 def make_row_keyboard() -> ReplyKeyboardMarkup:
@@ -52,6 +53,17 @@ async def mk_review(message: Message, state: FSMContext):
     await state.set_state(BotStatistic.start_statistic)
 
 
+@router.message(F.text.lower() == "оценить бота")
+async def msg_mk_review(message: Message, state: FSMContext):
+    """
+        Клавиатура с оценками
+    """
+    await message.answer(
+        text="Выберете оценку, которую заслжуил бот:",
+        reply_markup=make_row_keyboard()
+    )
+    await state.set_state(BotStatistic.start_statistic)
+
 @router.message(BotStatistic.start_statistic,
                 F.text.in_([str(i) for i in range(1, 6, 1)]))
 async def review(message: Message, state: FSMContext, statistic_dict):
@@ -63,7 +75,7 @@ async def review(message: Message, state: FSMContext, statistic_dict):
     statistic_dict[grade] = statistic_dict.get(grade, 0) + 1
     await message.answer(
         text="Спасибо за отзыв, он учтен в статичстике бота!",
-        reply_markup=ReplyKeyboardRemove())
+        reply_markup=main_keyboard())
     await state.clear()
 
 
@@ -85,5 +97,28 @@ async def mk_graph(message: Message, statistic_dict):
     image_from_pc = FSInputFile("grade_graph.png")
     await message.answer_photo(
         image_from_pc,
-        caption="Визуализация собранных оценок бота"
+        caption="Визуализация собранных оценок бота",
+        reply_markup=main_keyboard()
+    )
+
+@router.message(F.text.lower() == "статистика бота")
+async def msg_mk_graph(message: Message, statistic_dict):
+    """
+        Формирование и отправка графика оценок
+    """
+    avg_grade = round(calc_avg_grade(statistic_dict), 2)
+    plt.figure(figsize=(8, 4))
+    sns.barplot(x=list(statistic_dict.keys()),
+                y=list(statistic_dict.values()),
+                label=f"Среняя оценка: {avg_grade}")
+    plt.title("Оценки бота за время его работы")
+    plt.xlabel("Оценка")
+    plt.ylabel("Количество")
+    plt.grid()
+    plt.savefig("grade_graph.png")
+    image_from_pc = FSInputFile("grade_graph.png")
+    await message.answer_photo(
+        image_from_pc,
+        caption="Визуализация собранных оценок бота",
+        reply_markup=main_keyboard()
     )
